@@ -2,7 +2,7 @@
 package backend
 
 
-import . "mch/lib/messages"
+import . "mosaic-components/libraries/messages"
 
 
 type Backend interface {

@@ -6,7 +6,7 @@ package messages
 import "encoding/json"
 import "fmt"
 
-import . "mch/lib/channels"
+import . "mosaic-components/libraries/channels"
 
 
 func Encode (_message_0 Message) (*Packet, error) {

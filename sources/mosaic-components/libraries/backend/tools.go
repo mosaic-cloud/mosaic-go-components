@@ -8,7 +8,7 @@ import "net"
 
 import "vgl/transcript"
 
-import . "mch/lib/messages"
+import . "mosaic-components/libraries/messages"
 
 
 func TcpSocketAcquireSync (_backend Controller, _identifier ResourceIdentifier) (net.IP, uint16, string, error) {

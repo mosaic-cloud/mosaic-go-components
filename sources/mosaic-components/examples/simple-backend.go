@@ -5,11 +5,11 @@ package main
 
 import "os"
 
-import "mch/lib/backend"
-import "mch/lib/channels"
+import "mosaic-components/libraries/backend"
+import "mosaic-components/libraries/channels"
 import "vgl/transcript"
 
-import . "mch/lib/messages"
+import . "mosaic-components/libraries/messages"
 
 
 func main () () {

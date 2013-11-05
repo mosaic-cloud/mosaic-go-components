@@ -5,10 +5,10 @@ package backend
 
 import "fmt"
 
-import "mch/lib/channels"
+import "mosaic-components/libraries/channels"
 import "vgl/transcript"
 
-import . "mch/lib/messages"
+import . "mosaic-components/libraries/messages"
 
 
 type backend struct {

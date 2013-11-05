@@ -6,7 +6,7 @@ package messages
 import "fmt"
 import "net"
 
-import . "mch/lib/channels"
+import . "mosaic-components/libraries/channels"
 
 
 func Decode (_rawMessage *Packet) (Message, error) {

@@ -5,7 +5,7 @@ package backend
 
 import "fmt"
 
-import . "mch/lib/messages"
+import . "mosaic-components/libraries/messages"
 
 
 func DispatchComponentInvoke (_message_0 Message, _callbacks ComponentInvokeCallbacks) (error) {
