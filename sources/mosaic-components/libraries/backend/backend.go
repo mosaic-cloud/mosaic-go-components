@@ -412,6 +412,9 @@ func (_backend *backend) initialize (_channel channels.Controller) () {
 
 // NOTE: isolated
 func (_backend *backend) initiateTerminate (_error error) () {
+	
+	_backend.transcript.TraceDebugging ("initiating termination...")
+	
 	if _backend.state == Terminating {
 		// FIXME: Better handle this case?
 		return
@@ -419,9 +422,18 @@ func (_backend *backend) initiateTerminate (_error error) () {
 		panic ("illegal-state")
 	}
 	
+	_backend.transcript.TraceDebugging ("aborting pending completions...")
 	for _, _pendingCompletion := range _backend.pendingCompletions {
 		_pendingCompletion <- nil
 	}
+	
+	_backend.transcript.TraceDebugging ("terminating the channel...")
+	// FIXME: This is a hack! Fix the channel!
+	go func () () {
+		if _error := _backend.channel.Terminate (); _error != nil {
+			panic (_error)
+		}
+	} ()
 	
 	_backend.state = Terminating
 	_backend.channel.Close (channels.InboundFlow)
@@ -430,6 +442,7 @@ func (_backend *backend) initiateTerminate (_error error) () {
 
 // NOTE: isolated
 func (_backend *backend) concludeTerminate (_error error) () {
+	_backend.transcript.TraceDebugging ("conlcluding termination...")
 	if _backend.state == Terminated {
 		panic ("illegal-state")
 	} else if _backend.state != Terminating {
@@ -487,6 +500,7 @@ func (_backend_0 *backendChannelCallbacks) Terminated (_error error) (error) {
 
 
 func (_backend *backend) executeIsolateLoop (_isolates chan func () ()) () {
+	_backend.transcript.TraceDebugging ("started the isolates task...")
 	for {
 		_isolate := <- _isolates
 		if _isolate == nil {
@@ -494,6 +508,7 @@ func (_backend *backend) executeIsolateLoop (_isolates chan func () ()) () {
 		}
 		_isolate ()
 	}
+	_backend.transcript.TraceDebugging ("terminated the isolates task.")
 }
 
 

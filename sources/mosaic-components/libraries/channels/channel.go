@@ -187,13 +187,13 @@ func (_channel *channel) Terminate () (error) {
 				_channel.handleCallbacksError (_error)
 			}
 		}
+		close (_channel.callbacksIsolates)
 		
 		_channel.transcript.TraceDebugging ("waiting for the channel background tasks (phase 2)...")
 		_channel.terminateAcknowledgments.Wait ()
 		
 		_channel.transcript.TraceDebugging ("terminated the channel.")
 		close (_channel.controllerIsolates)
-		close (_channel.callbacksIsolates)
 		
 		_completion <- nil
 	}
@@ -225,12 +225,12 @@ func (_channel *channel) executeCallbacksLoop () {
 	if _error := _channel.callbacks.Initialized (_channel); _error != nil {
 		_channel.handleCallbacksError (_error)
 	}
-	for {
+	loop : for {
 		select {
 			case _packet, _ok := <- _channel.inboundPackets :
 				if !_ok {
 					_channel.inboundPackets = nil
-					continue
+					break
 				}
 				if _error := _channel.callbacks.Pushed (_packet); _error != nil {
 					_channel.handleCallbacksError (_error)
@@ -238,7 +238,7 @@ func (_channel *channel) executeCallbacksLoop () {
 			case _isolate, _ok := <- _channel.callbacksIsolates :
 				if !_ok {
 					_channel.callbacksIsolates = nil
-					break
+					break loop
 				}
 				_isolate ()
 		}
