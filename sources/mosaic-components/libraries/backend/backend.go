@@ -4,6 +4,7 @@ package backend
 
 
 import "fmt"
+import "time"
 
 import "mosaic-components/libraries/channels"
 import "vgl/transcript"
@@ -59,11 +60,25 @@ func Create (_callbacks Callbacks) (*backend, channels.Callbacks, error) {
 	return _backend, (*backendChannelCallbacks) (_backend), nil
 }
 
-
 // NOTE: non-isolated
 func (_backend *backend) Terminate () (error) {
 	_backend.controllerIsolates <- func () () {
 		_backend.initiateTerminate (nil)
+	}
+	return nil
+}
+
+
+// NOTE: non-isolated
+func (_backend *backend) WaitTerminated () (error) {
+	// FIXME: Implement this properly!
+	for {
+		if _backend.state != Terminated {
+			time.Sleep (1 * time.Second)
+			continue
+		} else {
+			break
+		}
 	}
 	return nil
 }

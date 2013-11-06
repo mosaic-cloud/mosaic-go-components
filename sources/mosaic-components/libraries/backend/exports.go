@@ -7,6 +7,7 @@ import . "mosaic-components/libraries/messages"
 
 type Backend interface {
 	Terminate () (error)
+	WaitTerminated () (error)
 }
 
 
