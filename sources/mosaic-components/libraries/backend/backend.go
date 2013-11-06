@@ -151,6 +151,10 @@ func (_backend *backend) handleSync (_invoke Message, _correlation Correlation) 
 		return nil, _error
 	}
 	_return := <- _completion
+	delete (_backend.pendingCompletions, _correlation)
+	if _return == nil {
+		return nil, fmt.Errorf ("sync-aborted")
+	}
 	return _return, nil
 }
 
@@ -409,10 +413,16 @@ func (_backend *backend) initialize (_channel channels.Controller) () {
 // NOTE: isolated
 func (_backend *backend) initiateTerminate (_error error) () {
 	if _backend.state == Terminating {
-		panic ("illegal-state")
+		// FIXME: Better handle this case?
+		return
 	} else if _backend.state != Active {
 		panic ("illegal-state")
 	}
+	
+	for _, _pendingCompletion := range _backend.pendingCompletions {
+		_pendingCompletion <- nil
+	}
+	
 	_backend.state = Terminating
 	_backend.channel.Close (channels.InboundFlow)
 	_backend.channel.Close (channels.OutboundFlow)
