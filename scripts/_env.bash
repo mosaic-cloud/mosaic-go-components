@@ -14,7 +14,7 @@ _applications_elf="${_outputs}/applications-elf"
 
 _GOOS=linux
 _GOARCH=386
-_GOROOT="${_tools}/go"
+_GOROOT="${_tools}/pkg/go"
 _GOPATH="${_outputs}/go"
 _PATH="${_GOROOT}/bin:${_tools}/bin:${PATH}"
 

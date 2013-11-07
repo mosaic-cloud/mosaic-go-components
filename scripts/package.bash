@@ -19,7 +19,7 @@ mkdir -- "${_outputs}/package/bin"
 mkdir -- "${_outputs}/package/lib"
 
 mkdir -- "${_outputs}/package/lib/applications-elf"
-find "${_outputs}/go/applications-elf" -type f -name "*.elf" -print \
+find "${_outputs}/applications-elf" -type f -name "*.elf" -print \
 | while read _application_elf ; do
 	cp -t "${_outputs}/package/lib/applications-elf" -- "${_application_elf}"
 done
