@@ -16,6 +16,7 @@ _GOOS=linux
 _GOARCH=386
 _GOROOT="${_tools}/pkg/go"
 _GOPATH="${_outputs}/go"
+
 _PATH="${_GOROOT}/bin:${_tools}/bin:${PATH}"
 
 _go_bin="go"
@@ -29,6 +30,7 @@ _generic_env=(
 		TMPDIR="${_temporary}"
 )
 
+_go_sources="${_sources}"
 _go_env=(
 		"${_generic_env[@]}"
 		GOOS="${_GOOS}"
@@ -38,6 +40,4 @@ _go_env=(
 )
 
 _package_name="$( basename -- "$( readlink -e -- . )" )"
-_package_scripts=( run-service run-component go )
-_package_version="${mosaic_distribution_version:-0.7.0_mosaic_dev}"
-_package_cook="${mosaic_distribution_cook:-cook@agent1.builder.mosaic.ieat.ro}"
+_package_version="${mosaic_distribution_version:-0.7.0}"

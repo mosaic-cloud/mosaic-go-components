@@ -54,8 +54,7 @@ EOS
 
 chmod +x -- "${_outputs}/package/lib/scripts/_do.sh"
 
-for _script_name in "${_package_scripts[@]}" ; do
-	test -e "${_scripts}/${_script_name}" || continue
+while read _script_name ; do
 	if test -e "${_scripts}/${_script_name}.bash" ; then
 		_script_path="${_scripts}/${_script_name}.bash"
 	else
@@ -65,6 +64,7 @@ for _script_name in "${_package_scripts[@]}" ; do
 	ln -s -T -- ./_do.sh "${_outputs}/package/lib/scripts/${_script_name}"
 	cat >"${_outputs}/package/bin/${_package_name}--${_script_name}" <<EOS
 #!/bin/bash
+export PATH=/usr/bin:/bin
 if test "\${#}" -eq 0 ; then
 	exec "\$( dirname -- "\$( readlink -e -- "\${0}" )" )/../lib/scripts/${_script_name}"
 else
@@ -72,7 +72,9 @@ else
 fi
 EOS
 	chmod +x -- "${_outputs}/package/bin/${_package_name}--${_script_name}"
-done
+done < <(
+	find "${_scripts}" -xtype f -regex '^.*/run-[a-z0-9-]+$' -printf '%f\n'
+)
 
 cat >"${_outputs}/package/pkg.json" <<EOS
 {
@@ -81,7 +83,8 @@ cat >"${_outputs}/package/pkg.json" <<EOS
 	"maintainer" : "developers@mosaic-cloud.eu",
 	"description" : "${_package_name}",
 	"directories" : [ "bin", "lib" ],
-	"depends" : []
+	"depends" : [
+	]
 }
 EOS
 

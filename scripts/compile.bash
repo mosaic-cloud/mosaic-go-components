@@ -5,7 +5,7 @@ if ! test "${#}" -eq 0 ; then
 	exit 1
 fi
 
-cd "${_sources}"
+cd "${_go_sources}"
 
 find -L . -type f \( -name '*.go' -o -name '*.c' -o -name '*.h' \) -print \
 | while read _file ; do
@@ -22,10 +22,10 @@ cd "${_outputs}/go/src"
 
 find -L . -type f \( -name '*.go' -o -name '*.c' -o -name '*.h' \) -print \
 | while read _file ; do
-	if ! test -e "$( dirname -- "${_sources}/${_file}" )" ; then
+	if ! test -e "$( dirname -- "${_go_sources}/${_file}" )" ; then
 		continue
 	fi
-	if ! test -e "${_sources}/${_file}" ; then
+	if ! test -e "${_go_sources}/${_file}" ; then
 		rm -- "${_file}"
 	fi
 done
@@ -39,6 +39,6 @@ fi
 while read _application _main ; do
 	echo "[ii] building \`${_application}\`..." >&2
 	env "${_go_env[@]}" "${_go_bin}" build -o "${_applications_elf}/${_application}.elf" "./src/${_main}"
-done <"${_sources}/applications.txt"
+done <"${_go_sources}/applications.txt"
 
 exit 0
