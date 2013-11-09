@@ -40,4 +40,4 @@ _go_env=(
 )
 
 _package_name="$( basename -- "$( readlink -e -- . )" )"
-_package_version="${mosaic_distribution_version:-0.7.0}"
+_package_version="${mosaic_distribution_version:-0.7.0_mosaic_dev}"
