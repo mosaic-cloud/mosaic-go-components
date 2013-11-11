@@ -64,7 +64,6 @@ while read _script_name ; do
 	ln -s -T -- ./_do.sh "${_outputs}/package/lib/scripts/${_script_name}"
 	cat >"${_outputs}/package/bin/${_package_name}--${_script_name}" <<EOS
 #!/bin/bash
-export PATH=/usr/bin:/bin
 if test "\${#}" -eq 0 ; then
 	exec "\$( dirname -- "\$( readlink -e -- "\${0}" )" )/../lib/scripts/${_script_name}"
 else
