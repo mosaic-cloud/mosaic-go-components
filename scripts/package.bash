@@ -64,6 +64,9 @@ while read _script_name ; do
 	ln -s -T -- ./_do.sh "${_outputs}/package/lib/scripts/${_script_name}"
 	cat >"${_outputs}/package/bin/${_package_name}--${_script_name}" <<EOS
 #!/bin/bash
+if test -n "\${mosaic_component_log:-}" ; then
+	exec 2>>"\${mosaic_component_log}"
+fi
 if test "\${#}" -eq 0 ; then
 	exec "\$( dirname -- "\$( readlink -e -- "\${0}" )" )/../lib/scripts/${_script_name}"
 else

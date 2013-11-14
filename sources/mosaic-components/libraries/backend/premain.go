@@ -8,12 +8,13 @@ import "io/ioutil"
 import "os"
 
 
-func PreMain (_delegate func (string, string) (error)) () {
+func PreMain (_delegate func (string, string, map[string]interface{}) (error)) () {
 	
 	_transcript := packageTranscript
 	
 	var _componentIdentifier string
 	var _channelEndpoint string
+	var _extraConfiguration map[string]interface{}
 	
 	_arguments := os.Args
 	if len (_arguments) < 1 {
@@ -77,6 +78,23 @@ func PreMain (_delegate func (string, string) (error)) () {
 						os.Exit (1)
 					}
 				}
+				{
+					_extraConfigurationValue, _ok := _configuration["configuration"]
+					if !_ok {
+						_extraConfiguration = nil
+					} else if _extraConfigurationValue == nil {
+						_extraConfiguration = nil
+					} else {
+						_extraConfiguration, _ok = _extraConfigurationValue.(map[string]interface{})
+						if !_ok {
+							_transcript.TraceError ("invalid configuration: expected JSON object `%#v`; aborting!", _extraConfigurationValue)
+							os.Exit (1)
+						}
+					}
+					if _extraConfiguration == nil {
+						_extraConfiguration = map[string]interface{} {}
+					}
+				}
 			}
 		
 		case "standalone" :
@@ -92,7 +110,7 @@ func PreMain (_delegate func (string, string) (error)) () {
 			os.Exit (1)
 	}
 	
-	if _error := _delegate (_componentIdentifier, _channelEndpoint); _error != nil {
+	if _error := _delegate (_componentIdentifier, _channelEndpoint, _extraConfiguration); _error != nil {
 		_transcript.TraceError ("delegate failed: `%s`; aborting!", _error.Error ())
 		os.Exit (1)
 	}
