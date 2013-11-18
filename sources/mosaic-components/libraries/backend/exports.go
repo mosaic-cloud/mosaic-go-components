@@ -8,6 +8,8 @@ import . "mosaic-components/libraries/messages"
 type Backend interface {
 	Terminate () (error)
 	WaitTerminated () (error)
+	// FIXME: Find a more elegant solution!
+	TranscriptPush (_data Attachment) (error)
 }
 
 

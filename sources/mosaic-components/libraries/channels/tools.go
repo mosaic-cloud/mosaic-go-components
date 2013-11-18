@@ -23,3 +23,5 @@ func CreateAndDial (_callbacks Callbacks, _network string, _address string) (Cha
 
 
 var _packageTranscript = transcript.NewPackageTranscript ()
+
+var useTranscript = false

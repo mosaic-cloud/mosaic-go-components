@@ -69,6 +69,27 @@ func (_backend *backend) Terminate () (error) {
 }
 
 
+// FIXME: Find a better alternative!
+// NOTE: non-isolated
+func (_backend *backend) TranscriptPush (_data Attachment) (error) {
+	_channel := _backend.channel
+	if _channel == nil {
+		return fmt.Errorf ("invalid-state")
+	}
+	_message := TranscriptPushInvoke (_data)
+	var _packet *channels.Packet
+	if _packet_1, _error := Encode (_message); _error != nil {
+		return _error
+	} else {
+		_packet = _packet_1
+	}
+	if _error := _channel.Push (_packet); _error != nil {
+		return _error
+	}
+	return nil
+}
+
+
 // NOTE: non-isolated
 func (_backend *backend) WaitTerminated () (error) {
 	// FIXME: Implement this properly!

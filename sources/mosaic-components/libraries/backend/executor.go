@@ -7,6 +7,8 @@ import "os"
 import "strings"
 
 import "mosaic-components/libraries/channels"
+import "mosaic-components/libraries/messages"
+import "vgl/transcript"
 
 
 func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoint string) (error) {
@@ -24,6 +26,10 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 	var _backendChannelCallbacks channels.Callbacks
 	if _backend, _backendChannelCallbacks, _error = Create (_callbacks); _error != nil {
 		panic (_error)
+	}
+	
+	if true {
+		transcript.SetBackend (& transcriptBackend { backend : _backend })
 	}
 	
 	_transcript.TraceInformation ("creating the component channel...")
@@ -54,4 +60,15 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 	
 	_transcript.TraceInformation ("terminated.")
 	return nil
+}
+
+
+type transcriptBackend struct {
+	backend Backend
+}
+
+func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
+	_line := transcript.FormatTrace (_trace)
+	transcript.StdErrBackend.Write ([]byte (_line))
+	_transcript.backend.TranscriptPush (messages.Attachment (_line))
 }
