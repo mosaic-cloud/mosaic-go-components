@@ -4,6 +4,7 @@ package backend
 
 
 import "fmt"
+import "math"
 import "time"
 
 import "mosaic-components/libraries/channels"
@@ -122,6 +123,23 @@ func (_backend_0 *backendController) ComponentCallSync (_component ComponentIden
 	}
 	panic ("fallthrough")
 }
+
+// NOTE: non-isolated
+func (_backend_0 *backendController) ComponentCallSyncRetry (_component ComponentIdentifier, _operation ComponentOperation, _inputs interface{}, _attachment Attachment, _retries int) (interface{}, Attachment, error) {
+	_backoffMultiplier := 1.5
+	for _retry := 0; _retry < _retries; _retry += 1 {
+		_outputs, _outputAttachment, _error := _backend_0.ComponentCallSync (_component, _operation, _inputs, _attachment)
+		if _error == nil {
+			return _outputs, _outputAttachment, nil
+		}
+		if _retry == (_retries - 1) {
+			return nil, nil, _error
+		}
+		time.Sleep (time.Duration (math.Pow (_backoffMultiplier, float64 (_retry + 1))) * time.Second)
+	}
+	panic ("fallthrough")
+}
+
 
 // NOTE: non-isolated
 func (_backend_0 *backendController) ComponentRegisterSync (_group ComponentGroup) (error) {
