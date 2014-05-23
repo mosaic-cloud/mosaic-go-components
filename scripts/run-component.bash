@@ -18,7 +18,6 @@ _run_env=(
 		mosaic_component_temporary="${_tmp}"
 		mosaic_node_fqdn="${_fqdn}"
 		mosaic_node_ip="${_ip}"
-		transcript_level=information
 )
 
 case "${_identifier}" in
