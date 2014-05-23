@@ -68,7 +68,12 @@ type transcriptBackend struct {
 }
 
 func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
+	
+	transcript.StdErrBackend.Consume (_trace)
+	
+	if ! transcript.ShouldConsume (_trace, transcript.MinimumLevel) {
+		return
+	}
 	_line := transcript.FormatTrace (_trace)
-	transcript.StdErrBackend.Write ([]byte (_line))
 	_transcript.backend.TranscriptPush (messages.Attachment (_line))
 }
