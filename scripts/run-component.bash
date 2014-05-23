@@ -5,11 +5,14 @@ _fqdn="${mosaic_node_fqdn:-mosaic-0.loopback.vnet}"
 _ip="${mosaic_node_ip:-127.0.155.0}"
 
 if test -n "${mosaic_component_temporary:-}" ; then
-	_tmp="${mosaic_component_temporary:-}"
+	_tmp="${mosaic_component_temporary}"
 elif test -n "${mosaic_temporary:-}" ; then
 	_tmp="${mosaic_temporary}/components/${_identifier}"
 else
 	_tmp="/tmp/mosaic/components/${_identifier}"
+fi
+if test "${_identifier}" == 00000000cc01bfbe028de269636921dadcf2999c ; then
+	_tmp="${_tmp}--$( date +%s )"
 fi
 
 _run_bin="${_applications_elf}/component-backend.elf"
