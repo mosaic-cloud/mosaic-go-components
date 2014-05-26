@@ -4,6 +4,7 @@ package simple_server
 
 
 import "bufio"
+import "errors"
 import "net"
 import "os"
 import "syscall"
@@ -58,6 +59,27 @@ type SimpleServer struct {
 
 func (_server *SimpleServer) TcpSocketAcquire (_identifier ResourceIdentifier) (_ip net.IP, _port uint16, _fqdn string, _error error) {
 	return backend.TcpSocketAcquireSync (_server.backend, _identifier)
+}
+
+func (_server *SimpleServer) TcpSocketResolve (_group ComponentGroup, _operation ComponentOperation) (_ip net.IP, _port uint16, _fqdn string, _error error) {
+	
+	var _ip_1 string
+	
+	if _outputs_1, _, _error := _server.backend.ComponentCallSync (ComponentIdentifier (_group), _operation, nil, nil); _error != nil {
+		return nil, 0, "", _error
+	} else {
+		_outputs := _outputs_1.(map[string]interface{})
+		_ip_1 = _outputs["ip"].(string)
+		_port = uint16 (_outputs["port"].(float64))
+		_fqdn = _outputs["fqdn"].(string)
+	}
+	
+	_ip = net.ParseIP (_ip_1)
+	if _ip == nil {
+		return nil, 0, "", errors.New ("invalid IP address")
+	}
+	
+	return _ip, _port, _fqdn, nil
 }
 
 
