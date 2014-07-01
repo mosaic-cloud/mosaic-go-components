@@ -7,27 +7,37 @@ export -n BASH_ENV
 _workbench="$( readlink -e -- . )"
 _sources="${_workbench}/sources"
 _scripts="${_workbench}/scripts"
-_tools="${pallur_tools:-${_workbench}/.tools}"
 _outputs="${_workbench}/.outputs"
-_temporary="${pallur_temporary:-/tmp}"
 _applications_elf="${_outputs}/applications-elf"
+_tools="${pallur_tools:-${_workbench}/.tools}"
+_temporary="${pallur_temporary:-${pallur_TMPDIR:-${TMPDIR:-/tmp}}}"
 
-_GOOS=linux
-_GOARCH=386
-_GOROOT="${_tools}/pkg/go"
+_PATH="${pallur_PATH:-${_tools}/bin:${PATH}}"
+_HOME="${pallur_HOME:-${HOME}}"
+_TMPDIR="${pallur_TMPDIR:-${TMPDIR:-${_temporary}}}"
+
+if test -n "${pallur_pkg_go:-}" ; then
+	_GOROOT="${pallur_pkg_go}"
+else
+	_GOROOT="${GOROOT}"
+fi
+_GOOS="${GOOS:-linux}"
+_GOARCH="${GOARCH:-386}"
 _GOPATH="${_outputs}/go"
 
-_PATH="${_GOROOT}/bin:${_tools}/bin:${PATH}"
-
-_go_bin="go"
-_go_bin="$( PATH="${_PATH}" type -P -- "${_go_bin}" || printf -- "${_go_bin}" )"
+if test -n "${_GOROOT:-}" ; then
+	_go_bin="${_GOROOT}/bin/go"
+else
+	_go_bin="$( PATH="${_PATH}" type -P -- "${_go_bin}" || printf -- "${_go_bin}" )"
+fi
 if test -z "${_go_bin}" ; then
 	echo "[ww] missing \`${_go_bin}\` (Go tool) executable in path: \`${_PATH}\`; ignoring!" >&2
 fi
 
 _generic_env=(
 		PATH="${_PATH}"
-		TMPDIR="${_temporary}"
+		HOME="${_HOME}"
+		TMPDIR="${_TMPDIR}"
 )
 
 _go_sources="${_sources}"
