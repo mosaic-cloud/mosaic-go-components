@@ -6,15 +6,7 @@ if ! test "${#}" -eq 0 ; then
 fi
 
 if test ! -e "${_outputs}" ; then
-	if test -L "${_outputs}" ; then
-		_outputs_store="$( readlink -- "${_outputs}" )"
-	else
-		_outputs_store="${_temporary}/$( basename -- "${_workbench}" )--$( readlink -m -- "${_outputs}" | tr -d '\n' | md5sum -t | tr -d ' \n-' )"
-		ln -s -T -- "${_outputs_store}" "${_outputs}"
-	fi
-	if test ! -e "${_outputs_store}" ; then
-		mkdir -- "${_outputs_store}"
-	fi
+	mkdir -- "${_outputs}"
 fi
 
 exit 0
