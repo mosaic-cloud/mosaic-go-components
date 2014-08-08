@@ -33,7 +33,8 @@ else
 	_go_bin="$( PATH="${_PATH}" type -P -- "${_go_bin}" || printf -- "${_go_bin}" )"
 fi
 if test -z "${_go_bin}" ; then
-	echo "[ww] missing \`${_go_bin}\` (Go tool) executable in path: \`${_PATH}\`; ignoring!" >&2
+	echo "[ee] missing \`${_go_bin}\` (Go tool) executable in path: \`${_PATH}\`; ignoring!" >&2
+	_go_bin=false
 fi
 
 _generic_env=(
