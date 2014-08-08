@@ -18,6 +18,8 @@ _TMPDIR="${pallur_TMPDIR:-${TMPDIR:-${_temporary}}}"
 
 if test -n "${pallur_pkg_go:-}" ; then
 	_GOROOT="${pallur_pkg_go}"
+elif test -e "${_tools}/pkg/go" ; then
+	_GOROOT="${_tools}/pkg/go"
 else
 	_GOROOT="${GOROOT}"
 fi
@@ -51,3 +53,4 @@ _go_env=(
 
 _package_name="$( basename -- "$( readlink -e -- . )" )"
 _package_version="${pallur_distribution_version:-0.7.0_dev}"
+_artifacts_cache="${pallur_artifacts:-}"
