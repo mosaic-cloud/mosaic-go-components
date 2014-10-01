@@ -24,6 +24,12 @@ find "${_outputs}/applications-elf" -type f -name "*.elf" -print \
 	cp -t "${_outputs}/package/lib/applications-elf" -- "${_application_elf}"
 done
 
+mkdir -- "${_outputs}/package/lib/mosaic-platform-definitions"
+find -H "${_resources}" -maxdepth 1 -type f -name 'mosaic_platform_definitions*.term' \
+| while read _definitions ; do
+	cp -t "${_outputs}/package/lib/mosaic-platform-definitions" -- "${_definitions}"
+done
+
 mkdir -- "${_outputs}/package/lib/scripts"
 
 cat >"${_outputs}/package/lib/scripts/_do.sh" <<'EOS'
