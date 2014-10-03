@@ -1,9 +1,12 @@
 #!/dev/null
 
-_identifier="${1:-00000000cc01bfbe028de269636921dadcf2999c}"
+## chunk::0ff45e3cc94ef8d96696d1e209ac245f::begin ##
+_identifier="${1:-0000000000000000000000000000000000000000}"
 _fqdn="${mosaic_node_fqdn:-mosaic-0.loopback.vnet}"
 _ip="${mosaic_node_ip:-127.0.155.0}"
+## chunk::0ff45e3cc94ef8d96696d1e209ac245f::end ##
 
+## chunk::c91018535aebeaa9d30f5eb4a51f389b::begin ##
 if test -n "${mosaic_component_temporary:-}" ; then
 	_tmp="${mosaic_component_temporary}"
 elif test -n "${mosaic_temporary:-}" ; then
@@ -11,9 +14,10 @@ elif test -n "${mosaic_temporary:-}" ; then
 else
 	_tmp="${TMPDIR:-/tmp}/mosaic/components/${_identifier}"
 fi
-if test "${_identifier}" == 00000000cc01bfbe028de269636921dadcf2999c ; then
-	_tmp="${_tmp}--$( date +%s )"
+if test "${_identifier}" == 0000000000000000000000000000000000000000 ; then
+	_tmp="${_tmp}--${$}--$( date +%s )"
 fi
+## chunk::c91018535aebeaa9d30f5eb4a51f389b::end ##
 
 _run_bin="${_applications_elf}/component-backend.elf"
 _run_env=(
@@ -36,7 +40,7 @@ case "${_identifier}" in
 		)
 	;;
 	
-	( 00000000cc01bfbe028de269636921dadcf2999c )
+	( 0000000000000000000000000000000000000000 )
 		if ! test "${#}" -eq 0 ; then
 			echo "[ee] invalid arguments; aborting!" >&2
 			exit 1
@@ -59,9 +63,17 @@ case "${_identifier}" in
 	;;
 esac
 
+_exec=( env "${_run_env[@]}" "${_run_bin}" "${_run_args[@]}" )
+
+## chunk::28123944cc9e9fddd23208a1405324fb::begin ##
 mkdir -p -- "${_tmp}"
 cd -- "${_tmp}"
 
-exec env "${_run_env[@]}" "${_run_bin}" "${_run_args[@]}"
+if test -n "${mosaic_component_log:-}" ; then
+	exec 2>"${mosaic_component_log}"
+fi
+
+exec "${_exec[@]}"
 
 exit 1
+## chunk::28123944cc9e9fddd23208a1405324fb::end ##
