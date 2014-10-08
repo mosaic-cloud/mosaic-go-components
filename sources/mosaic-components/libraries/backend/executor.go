@@ -69,7 +69,8 @@ type transcriptBackend struct {
 
 func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
 	
-	transcript.StdErrBackend.Consume (_trace)
+	// FIXME: Make this configurable!
+	// transcript.StdErrBackend.Consume (_trace)
 	
 	if ! transcript.ShouldConsume (_trace, transcript.MinimumLevel) {
 		return
