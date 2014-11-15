@@ -8,6 +8,7 @@ import "errors"
 import "net"
 import "os"
 import "syscall"
+import "time"
 
 import "mosaic-components/libraries/backend"
 import "vgl/transcript"
@@ -117,6 +118,16 @@ func (_server *SimpleServer) Terminated (_error error) (error) {
 	if _error := _server.process.Signal (syscall.SIGTERM); _error != nil {
 		panic (_error)
 	}
+	if _error := _server.process.Signal (syscall.SIGINT); _error != nil {
+		panic (_error)
+	}
+	// FIXME: Find a better way to handle this!
+	go func () () {
+		time.Sleep (3 * time.Second)
+		if _error := _server.process.Signal (syscall.SIGKILL); _error != nil {
+			panic (_error)
+		}
+	} ()
 	if _, _error := _server.process.Wait (); _error != nil {
 		panic (_error)
 	}
