@@ -17,7 +17,7 @@ func PreMain (_delegate func (string, string, map[string]interface{}) (error)) (
 	var _extraConfiguration map[string]interface{}
 	
 	_arguments := os.Args
-	if len (_arguments) < 1 {
+	if len (_arguments) < 2 {
 		_transcript.TraceError ("invalid arguments (expected at least one); aborting!")
 		os.Exit (1)
 	}

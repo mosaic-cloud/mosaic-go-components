@@ -34,6 +34,8 @@ func preMain (_componentIdentifier string, _channelEndpoint string, _configurati
 	_server.Configuration = _configuration
 	_server.Transcript = transcript.NewTranscript (_callbacks, _packageTranscript)
 	
+	_server.Temporary = os.Getenv ("mosaic_component_temporary")
+	
 	return backend.Execute (_server, _componentIdentifier, _channelEndpoint)
 }
 
@@ -55,6 +57,7 @@ type SimpleServer struct {
 	Identifier ComponentIdentifier
 	Configuration map[string]interface{}
 	Transcript transcript.Transcript
+	Temporary string
 }
 
 
@@ -99,9 +102,11 @@ func (_server *SimpleServer) Initialized (_backend backend.Controller) (error) {
 		panic (_error)
 	}
 	
-	_server.Transcript.TraceInformation ("registering the component...")
-	if _error := _server.backend.ComponentRegisterSync (_server.SelfGroup); _error != nil {
-		panic (_error)
+	if _server.SelfGroup != "" {
+		_server.Transcript.TraceInformation ("registering the component...")
+		if _error := _server.backend.ComponentRegisterSync (_server.SelfGroup); _error != nil {
+			panic (_error)
+		}
 	}
 	
 	_server.Transcript.TraceInformation ("initialized the component.")
@@ -114,7 +119,7 @@ func (_server *SimpleServer) Terminated (_error error) (error) {
 	
 	_server.Transcript.TraceInformation ("terminating the component...")
 	
-	_server.Transcript.TraceInformation ("terminating the server...")
+	_server.Transcript.TraceInformation ("signaling the server...")
 	if _error := _server.process.Signal (syscall.SIGTERM); _error != nil {
 		panic (_error)
 	}
@@ -124,10 +129,10 @@ func (_server *SimpleServer) Terminated (_error error) (error) {
 	// FIXME: Find a better way to handle this!
 	go func () () {
 		time.Sleep (3 * time.Second)
-		if _error := _server.process.Signal (syscall.SIGKILL); _error != nil {
-			panic (_error)
-		}
+		_server.process.Signal (syscall.SIGKILL)
 	} ()
+	
+	_server.Transcript.TraceInformation ("waiting the server...")
 	if _, _error := _server.process.Wait (); _error != nil {
 		panic (_error)
 	}

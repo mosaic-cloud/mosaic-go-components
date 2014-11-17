@@ -70,11 +70,16 @@ type transcriptBackend struct {
 func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
 	
 	// FIXME: Make this configurable!
-	// transcript.StdErrBackend.Consume (_trace)
-	
-	if ! transcript.ShouldConsume (_trace, transcript.MinimumLevel) {
-		return
+	if false {
+		transcript.StdErrBackend.Consume (_trace)
 	}
-	_line := transcript.FormatTrace (_trace)
-	_transcript.backend.TranscriptPush (messages.Attachment (_line))
+	
+	// FIXME: Make this configurable!
+	if true {
+		if ! transcript.ShouldConsume (_trace, transcript.MinimumLevel) {
+			return
+		}
+		_line := transcript.FormatTrace (_trace)
+		_transcript.backend.TranscriptPush (messages.Attachment (_line))
+	}
 }
