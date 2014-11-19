@@ -23,6 +23,7 @@ type Controller interface {
 	ResourceAcquireInvoke (_specification ResourceSpecification) (Correlation, error)
 	TranscriptPushInvoke (_data Attachment) (error)
 	ComponentCallSync (_component ComponentIdentifier, _operation ComponentOperation, _inputs interface{}, _attachment Attachment) (interface{}, Attachment, error)
+	ComponentCallSyncRetry (_component ComponentIdentifier, _operation ComponentOperation, _inputs interface{}, _attachment Attachment, _retries int) (interface{}, Attachment, error)
 	ComponentRegisterSync (ComponentGroup) (error)
 	ResourceAcquireSync (_specification ResourceSpecification) (ResourceDescriptor, error)
 }

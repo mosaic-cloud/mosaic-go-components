@@ -64,6 +64,10 @@ func (_channel *channel) pushOutboundPacket (_packet *Packet) (error) {
 	} else if _writeSize != int (_size) {
 		panic ("assertion")
 	}
+	// FIXME: For some reason this doesn't work for pipes!
+	// if _error := _channel.outboundStream.Sync (); _error != nil {
+	// 	return _error
+	// }
 	
 	if useTranscript { _channel.transcript.TraceDebugging ("completed outputing the outbound packet `%#v`.", _packet) }
 	return nil

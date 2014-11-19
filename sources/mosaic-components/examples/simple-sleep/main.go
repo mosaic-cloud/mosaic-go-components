@@ -17,8 +17,6 @@ type callbacks struct {
 
 func (_callbacks *callbacks) Initialize (_server *SimpleServer) (error) {
 	
-	_server.Transcript.TraceInformation ("initializing...")
-	
 	_server.ProcessExecutable = "/bin/sleep"
 	_server.ProcessArguments = []string { "1h" }
 	_server.ProcessEnvironment = map[string]string {}
@@ -29,6 +27,7 @@ func (_callbacks *callbacks) Initialize (_server *SimpleServer) (error) {
 
 
 func (_callbacks *callbacks) Called (_server *SimpleServer, _operation ComponentOperation, _inputs interface{}) (_outputs interface{}, _error error) {
+	
 	return nil, errors.New ("invalid-operation")
 }
 
@@ -38,4 +37,4 @@ func main () () {
 }
 
 
-var packageTranscript = transcript.NewPackageTranscript ()
+var packageTranscript = transcript.NewPackageTranscript (transcript.DebuggingLevel)

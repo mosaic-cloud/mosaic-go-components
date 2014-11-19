@@ -98,5 +98,5 @@ func (_callbacks *callbacks) ResourceAcquireFailed (_correlation Correlation, _e
 }
 
 
-var packageTranscript = transcript.NewPackageTranscript ()
+var packageTranscript = transcript.NewPackageTranscript (transcript.DebuggingLevel)
 var testsGroup = ComponentGroup ("85aa675f0f3af10789e2ef4bf07665217fd91bc6")

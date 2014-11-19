@@ -39,6 +39,7 @@ const (
 
 
 const isolateChannelBuffer = 128
+const handleSyncTimeout = 6 * time.Second
 
 
 func Create (_callbacks Callbacks) (*backend, channels.Callbacks, error) {
@@ -189,12 +190,18 @@ func (_backend *backend) handleSync (_invoke Message, _correlation Correlation) 
 	if _error := _backend.handleOutboundMessage1 (_invoke, _correlation, _completion); _error != nil {
 		return nil, _error
 	}
-	_return := <- _completion
-	delete (_backend.pendingCompletions, _correlation)
-	if _return == nil {
-		return nil, fmt.Errorf ("sync-aborted")
+	select {
+		case _return := <- _completion :
+			delete (_backend.pendingCompletions, _correlation)
+			if _return == nil {
+				return nil, fmt.Errorf ("sync-aborted")
+			}
+			return _return, nil
+		case <- time.After (handleSyncTimeout) :
+			delete (_backend.pendingCompletions, _correlation)
+			return nil, fmt.Errorf ("sync-timedout")
 	}
-	return _return, nil
+	panic ("fallthrough")
 }
 
 

@@ -69,7 +69,7 @@ func (_server *SimpleServer) TcpSocketResolve (_group ComponentGroup, _operation
 	
 	var _ip_1 string
 	
-	if _outputs_1, _, _error := _server.backend.ComponentCallSync (ComponentIdentifier (_group), _operation, nil, nil); _error != nil {
+	if _outputs_1, _, _error := _server.backend.ComponentCallSyncRetry (ComponentIdentifier (_group), _operation, nil, nil, TcpSocketResolveRetries); _error != nil {
 		return nil, 0, "", _error
 	} else {
 		_outputs := _outputs_1.(map[string]interface{})
@@ -89,10 +89,10 @@ func (_server *SimpleServer) TcpSocketResolve (_group ComponentGroup, _operation
 
 func (_server *SimpleServer) Initialized (_backend backend.Controller) (error) {
 	
-	_server.Transcript.TraceInformation ("initializing the component...")
+	_server.Transcript.TraceDebugging ("initializing the component...")
 	_server.backend = _backend
 	
-	_server.Transcript.TraceInformation ("initializing the server...")
+	_server.Transcript.TraceDebugging ("initializing the server...")
 	if _error := _server.callbacks.Initialize (_server); _error != nil {
 		panic (_error)
 	}
@@ -102,14 +102,14 @@ func (_server *SimpleServer) Initialized (_backend backend.Controller) (error) {
 		panic (_error)
 	}
 	
-	if _server.SelfGroup != "" {
-		_server.Transcript.TraceInformation ("registering the component...")
+	if _server.SelfGroup != NilComponentGroup {
+		_server.Transcript.TraceDebugging ("registering the component...")
 		if _error := _server.backend.ComponentRegisterSync (_server.SelfGroup); _error != nil {
 			panic (_error)
 		}
 	}
 	
-	_server.Transcript.TraceInformation ("initialized the component.")
+	_server.Transcript.TraceDebugging ("initialized the component.")
 	
 	return nil
 }
@@ -117,7 +117,7 @@ func (_server *SimpleServer) Initialized (_backend backend.Controller) (error) {
 
 func (_server *SimpleServer) Terminated (_error error) (error) {
 	
-	_server.Transcript.TraceInformation ("terminating the component...")
+	_server.Transcript.TraceDebugging ("terminating the component...")
 	
 	_server.Transcript.TraceInformation ("signaling the server...")
 	if _error := _server.process.Signal (syscall.SIGTERM); _error != nil {
@@ -132,12 +132,12 @@ func (_server *SimpleServer) Terminated (_error error) (error) {
 		_server.process.Signal (syscall.SIGKILL)
 	} ()
 	
-	_server.Transcript.TraceInformation ("waiting the server...")
+	_server.Transcript.TraceDebugging ("waiting the server...")
 	if _, _error := _server.process.Wait (); _error != nil {
 		panic (_error)
 	}
 	
-	_server.Transcript.TraceInformation ("terminated the component.")
+	_server.Transcript.TraceDebugging ("terminated the component.")
 	return nil
 }
 
@@ -252,7 +252,7 @@ func (_server *SimpleServer) startProcess () (error) {
 	}
 	
 	if _process_1, _error := os.StartProcess (_executable, _arguments, _attributes); _error != nil {
-		_server.Transcript.TraceDebugging ("staring failed (while starting the process): `%s`!", _error.Error ())
+		_server.Transcript.TraceError ("staring failed (while starting the process): `%s`!", _error.Error ())
 		panic (_error)
 	} else {
 		_server.process = _process_1
@@ -265,3 +265,4 @@ func (_server *SimpleServer) startProcess () (error) {
 
 
 const usePdeathSignal = false
+const TcpSocketResolveRetries = 10

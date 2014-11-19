@@ -17,11 +17,11 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 	
 	var _error error
 	
-	_transcript.TraceInformation ("initializing...")
-	_transcript.TraceInformation ("  * using the identifier `%s`;", _componentIdentifier)
-	_transcript.TraceInformation ("  * using the channel `%s`;", _channelEndpoint)
+	_transcript.TraceDebugging ("initializing...")
+	_transcript.TraceDebugging ("  * using the identifier `%s`;", _componentIdentifier)
+	_transcript.TraceDebugging ("  * using the channel `%s`;", _channelEndpoint)
 	
-	_transcript.TraceInformation ("creating the component backend...")
+	_transcript.TraceDebugging ("creating the component backend...")
 	var _backend Backend
 	var _backendChannelCallbacks channels.Callbacks
 	if _backend, _backendChannelCallbacks, _error = Create (_callbacks); _error != nil {
@@ -32,9 +32,9 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 		transcript.SetBackend (& transcriptBackend { backend : _backend })
 	}
 	
-	_transcript.TraceInformation ("creating the component channel...")
+	_transcript.TraceDebugging ("creating the component channel...")
 	if _channelEndpoint == "stdio" {
-		_transcript.TraceInformation ("  * using the stdio endpoint;")
+		_transcript.TraceDebugging ("  * using the stdio endpoint;")
 		_inboundStream := os.Stdin
 		_outboundStream := os.Stdout
 		if _, _error = channels.Create (_backendChannelCallbacks, _inboundStream, _outboundStream, nil); _error != nil {
@@ -42,7 +42,7 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 		}
 	} else if strings.HasPrefix (_channelEndpoint, "tcp:") {
 		_channelTcpEndpoint := _channelEndpoint[4:]
-		_transcript.TraceInformation ("  * usig the TCP endpoint `%s`;", _channelTcpEndpoint)
+		_transcript.TraceDebugging ("  * usig the TCP endpoint `%s`;", _channelTcpEndpoint)
 		if _, _error = channels.CreateAndDial (_backendChannelCallbacks, "tcp", _channelTcpEndpoint); _error != nil {
 			panic (_error)
 		}
@@ -53,7 +53,7 @@ func Execute (_callbacks Callbacks, _componentIdentifier string, _channelEndpoin
 	
 	_transcript.TraceInformation ("executing...")
 	
-	_transcript.TraceInformation ("waiting for the termination of the component backend...")
+	_transcript.TraceDebugging ("waiting for the termination of the component backend...")
 	if _error := _backend.WaitTerminated (); _error != nil {
 		panic (_error)
 	}
@@ -70,16 +70,15 @@ type transcriptBackend struct {
 func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
 	
 	// FIXME: Make this configurable!
-	if false {
+	if true {
 		transcript.StdErrBackend.Consume (_trace)
 	}
 	
 	// FIXME: Make this configurable!
 	if true {
-		if ! transcript.ShouldConsume (_trace, transcript.MinimumLevel) {
-			return
+		if transcript.ShouldConsume (_trace, transcript.DumpingLevel) {
+			_line := transcript.FormatTrace (_trace)
+			_transcript.backend.TranscriptPush (messages.Attachment (_line))
 		}
-		_line := transcript.FormatTrace (_trace)
-		_transcript.backend.TranscriptPush (messages.Attachment (_line))
 	}
 }

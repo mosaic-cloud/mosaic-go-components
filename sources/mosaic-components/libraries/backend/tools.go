@@ -27,4 +27,4 @@ func TcpSocketAcquireSync (_backend Controller, _identifier ResourceIdentifier) 
 }
 
 
-var packageTranscript = transcript.NewPackageTranscript ()
+var packageTranscript = transcript.NewPackageTranscript (transcript.InformationLevel)

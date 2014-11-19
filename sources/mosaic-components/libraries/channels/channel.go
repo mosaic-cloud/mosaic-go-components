@@ -13,9 +13,9 @@ import "vgl/transcript"
 type channel struct {
 	
 	callbacks Callbacks
-	inboundStream io.Reader
-	outboundStream io.Writer
-	closer io.Closer
+	inboundStream ChannelInboundStream
+	outboundStream ChannelOutboundStream
+	closer ChannelCloser
 	
 	controllerActive bool
 	inboundActive bool
@@ -33,11 +33,21 @@ type channel struct {
 }
 
 
-const packetChannelBuffer = 128
-const isolateChannelBuffer = 16
+type ChannelInboundStream interface {
+	io.Reader;
+}
+
+type ChannelOutboundStream interface {
+	io.Writer;
+	Sync () (error)
+}
+
+type ChannelCloser interface {
+	io.Closer;
+}
 
 
-func Create (_callbacks Callbacks, _inbound io.Reader, _outbound io.Writer, _closer io.Closer) (Channel, error) {
+func Create (_callbacks Callbacks, _inbound ChannelInboundStream, _outbound ChannelOutboundStream, _closer ChannelCloser) (Channel, error) {
 	
 	_channel := & channel {
 			
@@ -76,13 +86,27 @@ func (_channel *channel) Push (_packet *Packet) (error) {
 	_completion := make (chan error, 1)
 	defer close (_completion)
 	
-	_channel.controllerIsolates <- func () () {
-		if !_channel.outboundActive {
-			_completion <- fmt.Errorf ("outbound channel flow is closed!")
-			return
+	// FIXME: If the channel logs a message which gets to the backend transcript it will reach here and deadlock.
+	
+	if true {
+		
+		select {
+			case _channel.outboundPackets <- _packet :
+				// NOTE: <nop>
+			default :
+				// NOTE: <nop>
 		}
-		_channel.outboundPackets <- _packet
 		_completion <- nil
+		
+	} else {
+		_channel.controllerIsolates <- func () () {
+			if !_channel.outboundActive {
+				_completion <- fmt.Errorf ("outbound channel flow is closed!")
+				return
+			}
+			_channel.outboundPackets <- _packet
+			_completion <- nil
+		}
 	}
 	
 	return <- _completion
@@ -97,11 +121,12 @@ func (_channel *channel) Close (_flow Flow) (error) {
 		switch _flow {
 			
 			case InboundFlow :
-				_channel.transcript.TraceDebugging ("closing the channel inbound flow...")
 				if !_channel.inboundActive {
+					_channel.transcript.TraceDebugging ("inbound channel flow already closed!")
 					_completion <- fmt.Errorf ("inbound channel flow already closed!")
 					break
 				}
+				_channel.transcript.TraceDebugging ("signalling (from close) the channel inbound flow to close...")
 				_channel.inboundActive = false
 				select {
 					case _channel.inboundSignal <- true :
@@ -109,14 +134,16 @@ func (_channel *channel) Close (_flow Flow) (error) {
 					default :
 						// NOTE: <nop>
 				}
+				_channel.transcript.TraceDebugging ("signaled (from close) the channel inbound flow to close;")
 				_completion <- nil
 			
 			case OutboundFlow :
-				_channel.transcript.TraceDebugging ("closing the channel outbound flow...")
 				if !_channel.outboundActive {
+					_channel.transcript.TraceDebugging ("outbound channel flow already closed!")
 					_completion <- fmt.Errorf ("outbound channel flow already closed!")
 					break
 				}
+				_channel.transcript.TraceDebugging ("signalling (from close) the channel outbound flow to close...")
 				_channel.outboundActive = false
 				select {
 					case _channel.outboundSignal <- true :
@@ -124,6 +151,7 @@ func (_channel *channel) Close (_flow Flow) (error) {
 					default :
 						// NOTE: <nop>
 				}
+				_channel.transcript.TraceDebugging ("signaled (from close) the channel outbound flow to close;")
 				_completion <- nil
 			
 			default :
@@ -152,18 +180,23 @@ func (_channel *channel) Terminate () (error) {
 		_channel.inboundActive = false
 		_channel.outboundActive = false
 		
+		_channel.transcript.TraceDebugging ("signalling (from terminate) the channel inbound flow to close...")
 		select {
 			case _channel.inboundSignal <- true :
 				// NOTE: <nop>
 			default :
 				// NOTE: <nop>
 		}
+		_channel.transcript.TraceDebugging ("signaled (from terminate) the channel inbound flow to close;")
+		
+		_channel.transcript.TraceDebugging ("signalling (from terminate) the channel outbound flow to close...")
 		select {
 			case _channel.outboundSignal <- true :
 				// NOTE: <nop>
 			default :
 				// NOTE: <nop>
 		}
+		_channel.transcript.TraceDebugging ("signaled (from terminate) the channel outbound flow to close;")
 		
 		_channel.transcript.TraceDebugging ("waiting for the channel background tasks (phase 1)...")
 		_channel.terminateAcknowledgments.Wait ()
@@ -198,7 +231,9 @@ func (_channel *channel) Terminate () (error) {
 		_completion <- nil
 	}
 	
-	return <- _completion
+	_outcome := <- _completion
+	
+	return _outcome
 }
 
 
@@ -292,6 +327,7 @@ func (_channel *channel) executeInboundLoop () {
 	panic ("fallthrough")
 	
 	signalled :
+	_channel.transcript.TraceDebugging ("signalled channel inbound background task...")
 	if !_channel.inboundActive {
 		_channel.callbacksIsolates <- func () () {
 			if _error := _channel.callbacks.Closed (InboundFlow, nil); _error != nil {
@@ -303,9 +339,14 @@ func (_channel *channel) executeInboundLoop () {
 	}
 	
 	terminate :
+	_channel.transcript.TraceDebugging ("terminating channel inbound background task...")
 	if _channel.inboundPackets != nil {
 		close (_channel.inboundPackets)
 		_channel.inboundPackets = nil
+	}
+	if _channel.inboundSignal != nil {
+		close (_channel.inboundSignal)
+		_channel.inboundSignal = nil
 	}
 	_channel.transcript.TraceDebugging ("terminated the channel inbound background task.")
 	_channel.terminateAcknowledgments.Done ()
@@ -341,6 +382,7 @@ func (_channel *channel) executeOutboundLoop () {
 	panic ("fallthrough")
 	
 	signaled:
+	_channel.transcript.TraceDebugging ("signaled channel outbound background task...")
 	if !_channel.outboundActive {
 		_channel.callbacksIsolates <- func () () {
 			if _error := _channel.callbacks.Closed (OutboundFlow, nil); _error != nil {
@@ -352,9 +394,14 @@ func (_channel *channel) executeOutboundLoop () {
 	}
 	
 	terminate :
+	_channel.transcript.TraceDebugging ("terminating channel outbound background task...")
 	if _channel.outboundPackets != nil {
 		close (_channel.outboundPackets)
 		_channel.outboundPackets = nil
+	}
+	if _channel.outboundSignal != nil {
+		close (_channel.outboundSignal)
+		_channel.outboundSignal = nil
 	}
 	_channel.transcript.TraceDebugging ("terminated the channel outbound background task.")
 	_channel.terminateAcknowledgments.Done ()
