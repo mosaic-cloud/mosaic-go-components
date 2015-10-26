@@ -75,7 +75,7 @@ func (_transcript *transcriptBackend) Consume (_trace *transcript.Trace) () {
 	}
 	
 	// FIXME: Make this configurable!
-	if true {
+	if false {
 		if transcript.ShouldConsume (_trace, transcript.DumpingLevel) {
 			_line := transcript.FormatTrace (_trace)
 			_transcript.backend.TranscriptPush (messages.Attachment (_line))
