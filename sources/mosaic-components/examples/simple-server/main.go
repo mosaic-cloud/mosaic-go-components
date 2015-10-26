@@ -87,6 +87,16 @@ func (_server *SimpleServer) TcpSocketResolve (_group ComponentGroup, _operation
 }
 
 
+func (_server *SimpleServer) ComponentCall (_group ComponentGroup, _operation ComponentOperation, _inputs interface{}) (_outputs interface{}, _error error) {
+	
+	if _outputs, _, _error := _server.backend.ComponentCallSyncRetry (ComponentIdentifier (_group), _operation, _inputs, nil, ComponentCallRetries); _error != nil {
+		return nil, _error
+	} else {
+		return _outputs, nil
+	}
+}
+
+
 func (_server *SimpleServer) Initialized (_backend backend.Controller) (error) {
 	
 	_server.Transcript.TraceDebugging ("initializing the component...")
@@ -266,3 +276,4 @@ func (_server *SimpleServer) startProcess () (error) {
 
 const usePdeathSignal = false
 const TcpSocketResolveRetries = 10
+const ComponentCallRetries = 10
